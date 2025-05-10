@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const RENDER_BACKEND_BASE_URL = 'https://uncoverlearning-deploy.onrender.com';
   // Existing Flashcard Logic
   const cards = document.querySelectorAll('.flashcard');
+  //does this work?
 
   cards.forEach(card => {
     const cta = card.querySelector('.cta-text');
