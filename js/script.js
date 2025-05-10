@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const cards = document.querySelectorAll('.flashcard');
+  //does this work
 
   cards.forEach(card => {
     const cta      = card.querySelector('.cta-text');
