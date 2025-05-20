@@ -36,6 +36,7 @@ build/
 gcp-credentials.json
 *credentials*.json
 
+<<<<<<< HEAD
 .cursorrules
 
 # dependencies
@@ -58,3 +59,6 @@ gcp-credentials.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+=======
+.cursorrules
+>>>>>>> e27fef9ad10caecc36cfb3a161b5b8a3253e492f

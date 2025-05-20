@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Flashcard from '../Flashcard/Flashcard';
@@ -111,6 +112,30 @@ const ArrowButton = styled.button`
 
   &.right {
     right: 2rem;
+=======
+import React from 'react';
+import styled from 'styled-components';
+import Flashcard from '../Flashcard';
+import { FlashcardData } from '../../types';
+
+const Container = styled.div`
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  height: 100vh;
+  padding: 0 12vw;
+  background: #ffffff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  > * {
+    scroll-snap-align: center;
+>>>>>>> e27fef9ad10caecc36cfb3a161b5b8a3253e492f
   }
 `;
 
@@ -125,6 +150,7 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
   onExpandLogoCard,
   onCollapseLogoCard
 }) => {
+<<<<<<< HEAD
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showLogo, setShowLogo] = useState(false);
 
@@ -179,6 +205,19 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
         <ArrowButton className="right" onClick={handleNext}>→</ArrowButton>
       </Container>
     </>
+=======
+  return (
+    <Container>
+      {cards.map((card, index) => (
+        <Flashcard
+          key={index}
+          {...card}
+          onExpand={card.isLogoCard ? onExpandLogoCard : undefined}
+          onCollapse={card.isLogoCard ? onCollapseLogoCard : undefined}
+        />
+      ))}
+    </Container>
+>>>>>>> e27fef9ad10caecc36cfb3a161b5b8a3253e492f
   );
 };
 

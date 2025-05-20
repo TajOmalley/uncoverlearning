@@ -34,7 +34,14 @@ const App: React.FC = () => {
       isLogoCard: true,
       frontContent: (
         <>
+<<<<<<< HEAD
           <img src={logo} alt="Uncover Learning" style={{ width: '600px', marginBottom: '2rem' }} />
+=======
+          <img src={logo} alt="Uncover Learning" style={{ width: '200px', marginBottom: '2rem' }} />
+          <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: '2.5rem', color: '#5c6a5a', marginBottom: '1rem' }}>
+            uncover learning
+          </h1>
+>>>>>>> e27fef9ad10caecc36cfb3a161b5b8a3253e492f
         </>
       ),
       backContent: null // No longer used, handled by ExpandedLogoCard
