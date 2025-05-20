@@ -10,7 +10,7 @@ interface FlashcardProps {
   onCollapse?: () => void;
 }
 
-const Card = styled.div<{ isFlipped: boolean; isExpanded: boolean; isLogoCard: boolean }>`
+const Card = styled.div<{ $isFlipped: boolean; $isExpanded: boolean; $isLogoCard: boolean }>`
   flex: 0 0 70vw;
   height: 80vh;
   margin: 0 3vw;
@@ -19,7 +19,7 @@ const Card = styled.div<{ isFlipped: boolean; isExpanded: boolean; isLogoCard: b
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  ${props => props.isLogoCard && props.isExpanded && `
+  ${props => props.$isLogoCard && props.$isExpanded && `
     position: fixed;
     top: 0;
     left: 0;
@@ -33,20 +33,20 @@ const Card = styled.div<{ isFlipped: boolean; isExpanded: boolean; isLogoCard: b
   `}
 `;
 
-const CardInner = styled.div<{ isFlipped: boolean; isLogoCard: boolean }>`
+const CardInner = styled.div<{ $isFlipped: boolean; $isLogoCard: boolean }>`
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: ${props => props.isFlipped ? 'rotateX(180deg)' : 'rotateX(0)'};
-  cursor: ${props => props.isLogoCard ? 'pointer' : 'default'};
+  transform: ${props => props.$isFlipped ? 'rotateX(180deg)' : 'rotateX(0)'};
+  cursor: ${props => props.$isLogoCard ? 'pointer' : 'default'};
 
-  ${props => props.isLogoCard && props.isFlipped && `
+  ${props => props.$isLogoCard && props.$isFlipped && `
     transition: none;
   `}
 `;
 
-const CardFace = styled.div<{ isBack?: boolean }>`
+const CardFace = styled.div<{ $isBack?: boolean }>`
   position: absolute;
   width: 100%;
   height: 100%;
@@ -57,10 +57,10 @@ const CardFace = styled.div<{ isBack?: boolean }>`
   display: flex;
   flex-direction: column;
   padding: 2rem;
-  transform: ${props => props.isBack ? 'rotateX(180deg)' : 'rotateX(0)'};
+  transform: ${props => props.$isBack ? 'rotateX(180deg)' : 'rotateX(0)'};
   overflow: hidden;
 
-  ${props => !props.isBack && `
+  ${props => !props.$isBack && `
     text-align: center;
   `}
 `;
@@ -74,26 +74,6 @@ const ContentWrapper = styled.div`
   padding: 2rem;
   max-width: 800px;
   margin: 0 auto;
-`;
-
-const Title = styled.h3`
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  color: #5c6a5a;
-  text-transform: lowercase;
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
-`;
-
-const Description = styled.p`
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 400;
-  font-size: 1.5rem;
-  color: #000;
-  margin-bottom: 1.5rem;
-  line-height: 1.4;
-  max-width: 600px;
 `;
 
 const MissionText = styled.h1`
@@ -193,13 +173,13 @@ const Flashcard: React.FC<FlashcardProps> = ({
 
   return (
     <Card 
-      isFlipped={isFlipped} 
-      isExpanded={isExpanded}
-      isLogoCard={isLogoCard}
+      $isFlipped={isFlipped} 
+      $isExpanded={isExpanded}
+      $isLogoCard={isLogoCard}
     >
       <CardInner 
-        isFlipped={isFlipped}
-        isLogoCard={isLogoCard}
+        $isFlipped={isFlipped}
+        $isLogoCard={isLogoCard}
         onClick={isLogoCard ? handleExpand : handleFlip}
       >
         <CardFace>
@@ -220,7 +200,7 @@ const Flashcard: React.FC<FlashcardProps> = ({
             )}
           </ContentWrapper>
         </CardFace>
-        <CardFace isBack>
+        <CardFace $isBack>
           <BackButton onClick={isLogoCard ? handleCollapse : handleFlip}>
             &larr;
           </BackButton>

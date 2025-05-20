@@ -1,21 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { queryDocument, getChatHistory, clearChatHistory, Message } from '../../services/api';
 
 interface ChatProps {
   onClose: () => void;
   isOpen: boolean;
+  fileTitle?: string | null;
 }
 
-const Container = styled.div<{ isOpen: boolean }>`
+const Container = styled.div<{ $isOpen: boolean }>`
   display: flex;
   flex-direction: column;
   height: 100%;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  opacity: ${props => props.isOpen ? 1 : 0};
-  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
+  opacity: ${props => props.$isOpen ? 1 : 0};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
   transition: opacity 0.3s ease, visibility 0.3s ease;
 `;
 
@@ -56,13 +59,13 @@ const MessagesContainer = styled.div`
   gap: 1rem;
 `;
 
-const MessageBubble = styled.div<{ isUser: boolean }>`
+const MessageBubble = styled.div<{ $isUser: boolean }>`
   max-width: 80%;
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  background: ${props => props.isUser ? '#5c6a5a' : '#f5f5f5'};
-  color: ${props => props.isUser ? '#ffffff' : '#000000'};
-  align-self: ${props => props.isUser ? 'flex-end' : 'flex-start'};
+  background: ${props => props.$isUser ? '#5c6a5a' : '#f5f5f5'};
+  color: ${props => props.$isUser ? '#ffffff' : '#000000'};
+  align-self: ${props => props.$isUser ? 'flex-end' : 'flex-start'};
   font-size: 0.875rem;
   line-height: 1.5;
 `;
@@ -152,30 +155,67 @@ const LoadingIndicator = styled.div`
   }
 `;
 
-const Chat: React.FC<ChatProps> = ({ isOpen, onClose }) => {
+const Chat: React.FC<ChatProps> = ({ isOpen, onClose, fileTitle }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const loadChatHistory = useCallback(async () => {
+    try {
+      console.log('loadChatHistory: Attempting to load chat history');
+      const history = await getChatHistory();
+      console.log('loadChatHistory: Successfully loaded history', history);
+      
+      if (history.length === 0) {
+        let welcomeMessage = 'Welcome! How can I help you with your document today?';
+        if (fileTitle) {
+          welcomeMessage = `Welcome! I'm ready to answer questions about "${fileTitle}".`;
+        }
+        setMessages([{ 
+          role: 'assistant', 
+          content: welcomeMessage
+        }]);
+      } else {
+        setMessages(history);
+      }
+    } catch (error: any) {
+      console.error('Failed to load chat history. Details:', error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error request:', error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+      }
+      
+      // Handle error gracefully by showing a welcome message instead
+      let welcomeMessage = 'Welcome! How can I help you with your document today?';
+      if (fileTitle) {
+        welcomeMessage = `Welcome! I'm ready to answer questions about "${fileTitle}".`;
+      }
+      setMessages([{ 
+        role: 'assistant', 
+        content: welcomeMessage
+      }]);
+    }
+  }, [fileTitle]);
+
   useEffect(() => {
     if (isOpen) {
       loadChatHistory();
     }
-  }, [isOpen]);
+  }, [isOpen, loadChatHistory]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const loadChatHistory = async () => {
-    try {
-      const history = await getChatHistory();
-      setMessages(history);
-    } catch (error) {
-      console.error('Failed to load chat history:', error);
-    }
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -191,9 +231,11 @@ const Chat: React.FC<ChatProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      const response = await queryDocument(input.trim());
+      console.log('Querying document with:', input.trim(), 'File title:', fileTitle);
+      const response = await queryDocument(input.trim(), fileTitle || undefined);
+      console.log('Query response:', response);
       setMessages(prev => [...prev, response]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send message:', error);
       setMessages(prev => [
         ...prev,
@@ -207,32 +249,32 @@ const Chat: React.FC<ChatProps> = ({ isOpen, onClose }) => {
   const handleClearChat = async () => {
     try {
       await clearChatHistory();
-      setMessages([]);
+      let welcomeMessage = 'Chat history cleared. How can I help you now?';
+      if (fileTitle) {
+        welcomeMessage = `Chat history cleared. I'm ready to answer new questions about "${fileTitle}".`;
+      }
+      setMessages([{
+        role: 'assistant',
+        content: welcomeMessage
+      }]);
     } catch (error) {
       console.error('Failed to clear chat history:', error);
     }
   };
 
   return (
-    <Container isOpen={isOpen}>
+    <Container $isOpen={isOpen} data-testid="chat-container">
       <Header>
-        <Title>Chat with Document</Title>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <ClearButton onClick={handleClearChat}>Clear Chat</ClearButton>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
-        </div>
+        <Title>{fileTitle ? `Chat: ${fileTitle}` : 'Chat with Document'}</Title>
+        <CloseButton onClick={onClose}>&times;</CloseButton>
       </Header>
       <MessagesContainer>
-        {messages.map((message, index) => (
-          <MessageBubble key={index} isUser={message.role === 'user'}>
-            {message.content}
+        {messages.map((msg, index) => (
+          <MessageBubble key={index} $isUser={msg.role === 'user'}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
           </MessageBubble>
         ))}
-        {isLoading && (
-          <LoadingIndicator>
-            Thinking...
-          </LoadingIndicator>
-        )}
+        {isLoading && <LoadingIndicator>Thinking...</LoadingIndicator>}
         <div ref={messagesEndRef} />
       </MessagesContainer>
       <InputContainer onSubmit={handleSubmit}>
@@ -240,12 +282,15 @@ const Chat: React.FC<ChatProps> = ({ isOpen, onClose }) => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a question about your document..."
+          placeholder="Ask a question..."
           disabled={isLoading}
         />
         <SendButton type="submit" disabled={isLoading || !input.trim()}>
           Send
         </SendButton>
+        <ClearButton type="button" onClick={handleClearChat} disabled={isLoading}>
+          Clear Chat
+        </ClearButton>
       </InputContainer>
     </Container>
   );

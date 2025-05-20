@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import Chat from '../Chat';
+import { uploadDocument } from '../../services/api';
 
 interface ExpandedLogoCardProps {
   onCollapse: () => void;
@@ -86,6 +87,22 @@ const UploadButton = styled.label`
   &:hover { background: #4a5649; }
 `;
 
+const ErrorContainer = styled.div`
+  margin-top: 1rem;
+  color: #d32f2f;
+  font-family: 'Montserrat', sans-serif;
+  max-width: 400px;
+  text-align: center;
+`;
+
+const StatusContainer = styled.div`
+  margin-top: 1rem;
+  color: #5c6a5a;
+  font-family: 'Montserrat', sans-serif;
+  max-width: 400px;
+  text-align: center;
+`;
+
 const PdfIframe = styled.iframe`
   width: 100%;
   height: 90vh;
@@ -105,8 +122,16 @@ const HiddenInput = styled.input`
   display: none;
 `;
 
+// Set maximum file size to 50MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
+const MAX_FILE_SIZE_MB = MAX_FILE_SIZE / (1024 * 1024);
+
 const ExpandedLogoCard: React.FC<ExpandedLogoCardProps> = ({ onCollapse, logo, brandText }) => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [fileTitle, setFileTitle] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Prevent background scroll when overlay is open
@@ -116,11 +141,77 @@ const ExpandedLogoCard: React.FC<ExpandedLogoCardProps> = ({ onCollapse, logo, b
     return () => { document.body.style.overflow = originalStyle; };
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Reset states
+    setUploadError(null);
+    setUploadStatus(null);
+    
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
+    
+    // Validate file is present
+    if (!file) {
+      setUploadError('No file selected.');
+      return;
+    }
+    
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      setUploadError('Only PDF files are allowed.');
+      return;
+    }
+    
+    // Validate file size (limit to 50MB for this component's initial check)
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`);
+      return;
+    }
+    
+    // Create object URL for preview
+    const url = URL.createObjectURL(file);
+    setPdfUrl(url);
+    setUploadStatus('Uploading document... This may take a moment.');
+    setIsUploading(true);
+    
+    try {
+      console.log('Uploading document:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
+      // uploadDocument from api.ts will handle chunking for files > 10MB
+      const result = await uploadDocument(file, file.name);
+      console.log('Upload result:', result);
+      
+      setFileTitle(file.name);
+      setUploadStatus('Document uploaded and processing started! You can now ask questions about it.');
+      setIsUploading(false);
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      setIsUploading(false);
+      
+      let errorMessage = 'Failed to upload document: Unknown error.';
+      
+      if (err.response) {
+        console.error('Server response:', err.response.data);
+        if (err.response.status === 413) {
+          // This error might still come from the direct upload endpoint if a file > 10MB somehow bypassed the api.ts chunking logic,
+          // or if the chunking itself has an issue. The message in api.ts is more user-friendly for this.
+          errorMessage = `File is too large for the server to process directly. Chunked upload might be attempted or a smaller file (under 10MB for direct, or check chunking limits).`;
+        } else if (err.response.status === 401 || err.response.status === 403) {
+          errorMessage = 'Not authorized to upload files.';
+        } else if (err.response.status >= 500) {
+          if (err.response.data && err.response.data.detail) {
+            errorMessage = `Server Error: ${err.response.data.detail}`;
+          } else {
+            errorMessage = `Server Error (${err.response.status}): The server encountered an error processing your document.`;
+          }
+        }
+      } else if (err.request) {
+        errorMessage = 'No response from server. Please check your internet connection.';
+      } else if (err.message && err.message.startsWith('Failed to upload chunk')) {
+        errorMessage = err.message; // Use the specific chunk failure message from api.ts
+      } else if (err.message) {
+        errorMessage = `${err.message}`;
+      }
+      
+      setUploadError(errorMessage);
+      setUploadStatus(null);
     }
   };
 
@@ -135,22 +226,35 @@ const ExpandedLogoCard: React.FC<ExpandedLogoCardProps> = ({ onCollapse, logo, b
         <PdfPanel>
           {!pdfUrl ? (
             <>
-              <UploadButton htmlFor="pdf-upload">Upload your document
-                <HiddenInput
-                  id="pdf-upload"
-                  type="file"
-                  accept="application/pdf"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                />
-              </UploadButton>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <UploadButton htmlFor="pdf-upload" style={{ opacity: isUploading ? 0.7 : 1, pointerEvents: isUploading ? 'none' : 'auto' }}>
+                  {isUploading ? 'Uploading...' : 'Upload your document'}
+                  <HiddenInput
+                    id="pdf-upload"
+                    type="file"
+                    accept="application/pdf"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    disabled={isUploading}
+                  />
+                </UploadButton>
+                {uploadError && <ErrorContainer>{uploadError}</ErrorContainer>}
+                {uploadStatus && <StatusContainer>{uploadStatus}</StatusContainer>}
+                <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#777' }}>
+                  Maximum file size: {MAX_FILE_SIZE_MB}MB
+                </div>
+              </div>
             </>
           ) : (
-            <PdfIframe src={pdfUrl} title="PDF Viewer" />
+            <>
+              <PdfIframe src={pdfUrl} title="PDF Viewer" />
+              {uploadError && <div style={{ position: 'absolute', bottom: 16, left: 16, color: '#d32f2f', background: '#fff', padding: '0.5rem 1rem', borderRadius: 6 }}>{uploadError}</div>}
+              {uploadStatus && <div style={{ position: 'absolute', bottom: 16, left: 16, color: '#5c6a5a', background: '#fff', padding: '0.5rem 1rem', borderRadius: 6 }}>{uploadStatus}</div>}
+            </>
           )}
         </PdfPanel>
         <ChatPanel>
-          <Chat isOpen={true} onClose={onCollapse} />
+          <Chat isOpen={true} onClose={onCollapse} fileTitle={fileTitle} />
         </ChatPanel>
       </Main>
     </Overlay>
