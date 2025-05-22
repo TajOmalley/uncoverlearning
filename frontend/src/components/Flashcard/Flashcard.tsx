@@ -1,51 +1,26 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-export interface FlashcardProps {
-  id?: string;
+interface FlashcardProps {
+  id: string;
   frontContent: React.ReactNode;
-  backContent: React.ReactNode;
+  backContent: React.ReactNode | null;
   isLogoCard?: boolean;
   onExpand?: () => void;
   onCollapse?: () => void;
+  isFlippable?: boolean;
   isFlipped?: boolean;
   onFlip?: () => void;
 }
 
-const Card = styled.div<{ $isFlipped: boolean; $isExpanded: boolean; $isLogoCard: boolean }>`
-  flex: 0 0 70vw;
-  height: 80vh;
-  margin: 0 3vw;
-  scroll-snap-align: center;
-  perspective: 1000px;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  ${props => props.$isLogoCard && props.$isExpanded && `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    flex: none;
-    scroll-snap-align: none;
-    z-index: 1000;
-    overflow: hidden;
-  `}
-`;
-
-const CardInner = styled.div<{ $isFlipped: boolean; $isLogoCard: boolean }>`
+const Card = styled.div<{ $isFlipped: boolean; $isFlippable: boolean }>`
   width: 100%;
   height: 100%;
+  position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: ${props => props.$isFlipped ? 'rotateX(180deg)' : 'rotateX(0)'};
-  cursor: ${props => props.$isLogoCard ? 'pointer' : 'default'};
-
-  ${props => props.$isLogoCard && props.$isFlipped && `
-    transition: none;
-  `}
+  transition: transform 0.6s;
+  transform: ${props => props.$isFlipped ? 'rotateY(180deg)' : 'rotateY(0)'};
+  cursor: ${props => props.$isFlippable ? 'pointer' : 'default'};
 `;
 
 const CardFace = styled.div<{ $isBack?: boolean }>`
@@ -53,108 +28,121 @@ const CardFace = styled.div<{ $isBack?: boolean }>`
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  padding: 2rem;
-  transform: ${props => props.$isBack ? 'rotateX(180deg)' : 'rotateX(0)'};
-  overflow: hidden;
-
-  ${props => !props.$isBack && `
-    text-align: center;
-  `}
-`;
-
-const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
   padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: ${props => props.$isBack ? 'rotateY(180deg)' : 'rotateY(0)'};
+  overflow: hidden;
 `;
 
-const MissionText = styled.h1`
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  color: #5c6a5a;
-  text-transform: lowercase;
-  font-size: 2.5rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
-  max-width: 600px;
-`;
+const ContentWrapper = styled.div<{ $isVisible: boolean }>`
+  opacity: ${props => props.$isVisible ? 1 : 0};
+  transition: opacity 0.3s ease;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow: auto;
 
-const CTAText = styled.p`
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 400;
-  font-size: 1.25rem;
-  color: #000;
-  cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-  margin-top: 1rem;
-
-  &:hover {
-    transform: translateY(-4px);
-    opacity: 0.8;
+  /* Make images responsive */
+  img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
   }
-`;
 
-const Button = styled.button`
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 400;
-  background: #5c6a5a;
-  color: #fff;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-top: 2rem;
-  font-size: 1rem;
-
-  &:hover {
-    background-color: #4a5649;
+  /* Make text responsive */
+  p, h1, h2, h3, h4, h5, h6 {
+    width: 100%;
+    text-align: center;
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
-`;
 
-const BackButton = styled(Button)`
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  padding: 0.5rem 1rem;
-  font-size: 1.5rem;
-  background: none;
-  color: #5c6a5a;
-  margin: 0;
-  
-  &:hover {
-    background: rgba(92, 106, 90, 0.1);
+  /* Make lists responsive */
+  ul, ol {
+    width: 100%;
+    padding: 0 1rem;
+    margin: 0.5rem 0;
+  }
+
+  /* Make tables responsive */
+  table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0;
+  }
+
+  /* Make code blocks responsive */
+  pre, code {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Make buttons and interactive elements responsive */
+  button, a {
+    max-width: 100%;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  /* Make flex containers responsive */
+  .flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* Make grid containers responsive */
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    width: 100%;
   }
 `;
 
 const Flashcard: React.FC<FlashcardProps> = ({
-  id,
   frontContent,
   backContent,
-  isLogoCard = false,
+  isLogoCard,
   onExpand,
   onCollapse,
+  isFlippable = true,
   isFlipped: controlledIsFlipped,
   onFlip
 }) => {
   const [internalIsFlipped, setInternalIsFlipped] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-
+  
+  // Use controlled or uncontrolled flipping
   const isFlipped = controlledIsFlipped !== undefined ? controlledIsFlipped : internalIsFlipped;
 
-  const handleFlip = (e: React.MouseEvent) => {
-    if (!isLogoCard) {
-      e.stopPropagation();
+  const handleClick = () => {
+    if (!isFlippable) return;
+    
+    if (isLogoCard) {
+      if (isFlipped) {
+        onCollapse?.();
+      } else {
+        onExpand?.();
+      }
+    } else {
       if (onFlip) {
         onFlip();
       } else {
@@ -163,62 +151,20 @@ const Flashcard: React.FC<FlashcardProps> = ({
     }
   };
 
-  const handleExpand = (e: React.MouseEvent) => {
-    if (isLogoCard) {
-      e.stopPropagation();
-      setIsExpanded(true);
-      setInternalIsFlipped(true);
-      onExpand?.();
-    }
-  };
-
-  const handleCollapse = (e: React.MouseEvent) => {
-    if (isLogoCard) {
-      e.stopPropagation();
-      setIsExpanded(false);
-      setInternalIsFlipped(false);
-      onCollapse?.();
-    }
-  };
-
   return (
-    <Card 
-      $isFlipped={isFlipped} 
-      $isExpanded={isExpanded}
-      $isLogoCard={isLogoCard}
-    >
-      <CardInner 
-        $isFlipped={isFlipped}
-        $isLogoCard={isLogoCard}
-        onClick={isLogoCard ? handleExpand : handleFlip}
-      >
-        <CardFace>
-          <ContentWrapper>
-            {frontContent}
-            {id === 'problem' && !isLogoCard && (
-              <Button onClick={handleFlip}>
-                see how
-              </Button>
-            )}
-            {isLogoCard && (
-              <>
-                <MissionText>engineer equitable education</MissionText>
-                <CTAText onClick={handleExpand}>
-                  click to uncover our textbook tutor prototype
-                </CTAText>
-              </>
-            )}
-          </ContentWrapper>
-        </CardFace>
+    <Card $isFlipped={isFlipped} $isFlippable={isFlippable} onClick={handleClick}>
+      <CardFace>
+        <ContentWrapper $isVisible={isFlippable}>
+          {frontContent}
+        </ContentWrapper>
+      </CardFace>
+      {backContent && (
         <CardFace $isBack>
-          <BackButton onClick={isLogoCard ? handleCollapse : handleFlip}>
-            &larr;
-          </BackButton>
-          <ContentWrapper>
+          <ContentWrapper $isVisible={isFlippable}>
             {backContent}
           </ContentWrapper>
         </CardFace>
-      </CardInner>
+      )}
     </Card>
   );
 };
