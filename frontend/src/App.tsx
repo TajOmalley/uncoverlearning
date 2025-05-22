@@ -11,13 +11,6 @@ import magnusImage from './assets/team/magnus.jpg';
 import henryImage from './assets/team/henry.jpg';
 import tajImage from './assets/team/taj.jpg';
 
-// Animated background keyframes
-const gradientMove = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
-
 const riseIn = keyframes`
   from {
     opacity: 0;
@@ -168,20 +161,6 @@ const AnimatedLogo = styled.img`
   clip-path: polygon(0 0, 100% 0, 100% var(--reveal-height, 0%), 0 var(--reveal-height, 0%));
 `;
 
-const LogoReveal = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    transparent 0%,
-    white 150px
-  );
-  pointer-events: none;
-`;
-
 const DrawingCanvas = styled.canvas`
   position: fixed;
   top: 0;
@@ -205,14 +184,6 @@ const WelcomeContent = styled.div`
     text-align: center;
     width: 100%;
   }
-`;
-
-const WelcomeIntro = styled.div`
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.2rem;
-  color: #444;
-  margin-bottom: 0.5rem;
-  letter-spacing: 0.04em;
 `;
 
 const WelcomeHeadline = styled.h1`
@@ -269,41 +240,11 @@ const CTAButton = styled.button`
   }
 `;
 
-const ScrollIndicator = styled.div`
-  position: absolute;
-  bottom: 2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2.5rem;
-  color: #5c6a5a;
-  opacity: 0;
-  animation: fadeInScroll 1s 2.5s forwards, bounce 1.2s 3.5s infinite alternate;
-  @keyframes fadeInScroll {
-    to { opacity: 1; }
-  }
-  @keyframes bounce {
-    0% { transform: translateX(-50%) translateY(0); }
-    100% { transform: translateX(-50%) translateY(12px); }
-  }
-`;
-
 const AppContainer = styled.div`
   width: 100%;
   min-height: 100vh;
   background: #ffffff;
   overflow: hidden;
-`;
-
-const MissionText = styled.h1`
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  color: #5c6a5a;
-  text-transform: lowercase;
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
-  margin: 1rem 0;
-  line-height: 1.2;
-  max-width: 600px;
-  text-align: center;
 `;
 
 const CTAText = styled.p`
@@ -343,7 +284,6 @@ const GreenBrand = styled.span`
 
 const App: React.FC = () => {
   const [isLogoCardExpanded, setIsLogoCardExpanded] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
