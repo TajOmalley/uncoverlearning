@@ -32,4 +32,13 @@ services:
       - key: SEMANTIC_WEIGHT
         value: "1.0"
       - key: RRF_K
-        value: "50" 
+        value: "50"
+
+  - type: web
+    name: uncoverlearning-frontend
+    env: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npx serve -s build -l $PORT
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false 
