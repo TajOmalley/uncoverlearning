@@ -149,7 +149,6 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
   onCollapseLogoCard
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showLogo, setShowLogo] = useState(false);
   const [flippedCards, setFlippedCards] = useState<boolean[]>(new Array(cards.length).fill(false));
 
   const handleNext = () => {
@@ -173,10 +172,6 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
       return newFlipped;
     });
   };
-
-  useEffect(() => {
-    setShowLogo(currentIndex > 0);
-  }, [currentIndex]);
 
   const isCardVisible = (index: number) => {
     // For the last card, only show itself

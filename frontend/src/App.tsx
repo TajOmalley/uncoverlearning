@@ -342,54 +342,35 @@ const GreenBrand = styled.span`
 `;
 
 const App: React.FC = () => {
-  const [isChatExpanded, setIsChatExpanded] = useState(false);
-  const flashcardRef = useRef<HTMLDivElement>(null);
+  const [isLogoCardExpanded, setIsLogoCardExpanded] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
-  const [revealHeight, setRevealHeight] = useState(0);
-  const [logoRevealed, setLogoRevealed] = useState(false);
-  const [notebookVisible, setNotebookVisible] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (logoRevealed) return;
-    const logoRect = logoRef.current?.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    // Use mouse Y relative to viewport height
-    const percentage = Math.min(100, Math.max(0, (e.clientY / windowHeight) * 100));
-    setRevealHeight(percentage);
-    if (percentage >= 99) {
-      setLogoRevealed(true);
-      setRevealHeight(100);
-    }
-  };
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
+    setMousePosition({ x: e.clientX, y: e.clientY });
+  }, []);
 
   React.useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [logoRevealed]);
+  }, [handleMouseMove]);
 
   // Set the CSS variable for clip-path
   React.useEffect(() => {
     if (logoRef.current) {
-      logoRef.current.style.setProperty('--reveal-height', `${revealHeight}%`);
+      logoRef.current.style.setProperty('--reveal-height', `${mousePosition.y}%`);
     }
-  }, [revealHeight]);
-
-  React.useEffect(() => {
-    setTimeout(() => setNotebookVisible(true), 100);
-  }, []);
+  }, [mousePosition]);
 
   const handleExpandLogoCard = () => {
-    setIsChatExpanded(true);
+    setIsLogoCardExpanded(true);
   };
 
   const handleCollapseLogoCard = () => {
-    setIsChatExpanded(false);
-  };
-
-  const handleScrollToFlashcards = () => {
-    flashcardRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setIsLogoCardExpanded(false);
   };
 
   const cards: FlashcardData[] = [
@@ -828,8 +809,8 @@ const App: React.FC = () => {
     <AppContainer>
       <DrawingCanvas />
       <WelcomeBlock>
-        <LogoCircle visible={notebookVisible}>
-          <AnimatedLogo ref={logoRef} src={logo} alt="Logo" style={{ '--reveal-height': `${revealHeight}%` } as React.CSSProperties} />
+        <LogoCircle visible={true}>
+          <AnimatedLogo ref={logoRef} src={logo} alt="Logo" style={{ '--reveal-height': `${mousePosition.y}%` } as React.CSSProperties} />
         </LogoCircle>
         <WelcomeContent>
           <WelcomeHeadline>welcome to the</WelcomeHeadline>
@@ -838,16 +819,15 @@ const App: React.FC = () => {
           <WelcomeSubtext>
             Personalized college studying and teaching tools based directly on open source course materials
           </WelcomeSubtext>
-          <CTAButton onClick={handleScrollToFlashcards}>scroll to uncover your first lesson</CTAButton>
+          <CTAButton onClick={handleExpandLogoCard}>scroll to uncover your first lesson</CTAButton>
         </WelcomeContent>
       </WelcomeBlock>
-      <div ref={flashcardRef} />
       <FlashcardContainer
         cards={cards}
         onExpandLogoCard={handleExpandLogoCard}
         onCollapseLogoCard={handleCollapseLogoCard}
       />
-      {isChatExpanded && (
+      {isLogoCardExpanded && (
         <ExpandedLogoCard 
           onCollapse={handleCollapseLogoCard}
           logo={logo}
