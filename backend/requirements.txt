@@ -1,0 +1,27 @@
+# Core Framework
+fastapi
+uvicorn
+python-dotenv
+pydantic<2.0.0
+python-multipart
+
+# Google Cloud
+google-cloud-storage
+google-generativeai
+
+# Document Processing
+PyMuPDF
+pytesseract
+Pillow
+
+# Database
+supabase
+
+# LangChain Ecosystem
+langchain>=0.1.14
+langchain-core>=0.1.33
+langchain-community>=0.0.30
+langchain-google-genai>=0.0.6
+
+# HTTP and Requests
+requests
