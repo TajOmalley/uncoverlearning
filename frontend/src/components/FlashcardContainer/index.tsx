@@ -1,40 +1,22 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Flashcard from '../Flashcard/Flashcard';
 import { FlashcardData } from '../../types';
-import logo from '../../assets/logo.png';
 
 const Header = styled.header`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
-  background: white;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.95);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-`;
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const CenterSection = styled.div`
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-`;
-
-const RightSection = styled.div`
-  display: flex;
-  align-items: center;
 `;
 
 const MenuIcon = styled.div`
@@ -42,7 +24,6 @@ const MenuIcon = styled.div`
   cursor: pointer;
   color: #5c6a5a;
   transition: color 0.2s ease;
-  padding: 0.5rem;
 
   &:hover {
     color: #4a5649;
@@ -61,10 +42,15 @@ const ContactText = styled.div`
   }
 `;
 
-const Logo = styled.img`
-  height: 40px;
-  width: auto;
-  margin: 0 1rem;
+const Logo = styled.div<{ $visible: boolean }>`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: ${props => props.$visible ? 1 : 0};
+  transition: opacity 0.3s ease;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: #5c6a5a;
 `;
 
 const Container = styled.div`
@@ -73,7 +59,7 @@ const Container = styled.div`
   justify-content: center;
   min-height: 100vh;
   padding: 2rem;
-  background: #c5cfc4;
+  background: #f5f5f5;
   position: relative;
   padding-top: 100px;
 `;
@@ -84,29 +70,22 @@ const CardStack = styled.div`
   height: 85vh;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   padding: 0 2rem;
-  perspective: 1000px;
 `;
 
 const CardWrapper = styled.div<{ $offset: number; $zIndex: number; $isVisible: boolean }>`
   position: absolute;
-  left: 50%;
-  transform: translateX(calc(-50% + ${props => props.$offset * 60}px));
+  transform: translateX(${props => props.$offset * 60}px);
   z-index: ${props => props.$zIndex};
   opacity: ${props => props.$isVisible ? 1 : 0};
-  transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   cursor: pointer;
-  width: 70vw;
-  height: 80vh;
+  width: 100%;
   max-width: 1200px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-  border-radius: 20px;
-  overflow: hidden;
 
   &:hover {
-    transform: translateX(calc(-50% + ${props => props.$offset * 60}px)) translateY(-10px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+    transform: translateX(${props => props.$offset * 60}px) translateY(-10px);
   }
 `;
 
@@ -121,11 +100,10 @@ const ArrowButton = styled.button`
   cursor: pointer;
   padding: 1rem;
   z-index: 10;
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color 0.2s ease;
 
   &:hover {
     color: #4a5649;
-    transform: translateY(-50%) scale(1.1);
   }
 
   &.left {
@@ -134,6 +112,30 @@ const ArrowButton = styled.button`
 
   &.right {
     right: 2rem;
+=======
+import React from 'react';
+import styled from 'styled-components';
+import Flashcard from '../Flashcard';
+import { FlashcardData } from '../../types';
+
+const Container = styled.div`
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  height: 100vh;
+  padding: 0 12vw;
+  background: #ffffff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  > * {
+    scroll-snap-align: center;
+>>>>>>> e27fef9ad10caecc36cfb3a161b5b8a3253e492f
   }
 `;
 
@@ -148,9 +150,9 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
   onExpandLogoCard,
   onCollapseLogoCard
 }) => {
+<<<<<<< HEAD
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showLogo, setShowLogo] = useState(false);
-  const [flippedCards, setFlippedCards] = useState<boolean[]>(new Array(cards.length).fill(false));
 
   const handleNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % cards.length);
@@ -160,57 +162,24 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
     setCurrentIndex((prevIndex) => (prevIndex - 1 + cards.length) % cards.length);
   };
 
-  const handleCardClick = (index: number) => {
-    if (index !== currentIndex) {
-      setCurrentIndex(index);
-    }
-  };
-
-  const handleFlip = (index: number) => {
-    setFlippedCards(prev => {
-      const newFlipped = [...prev];
-      newFlipped[index] = !newFlipped[index];
-      return newFlipped;
-    });
-  };
-
   useEffect(() => {
     setShowLogo(currentIndex > 0);
   }, [currentIndex]);
 
-  const isCardVisible = (index: number) => {
-    // For the last card, only show itself
-    if (currentIndex === cards.length - 1) {
-      return index === currentIndex;
-    }
-    
-    // For the second-to-last card, show itself and the last card
-    if (currentIndex === cards.length - 2) {
-      return index === currentIndex || index === cards.length - 1;
-    }
-    
-    // For all other cards, show current and next two
-    return index >= currentIndex && index <= currentIndex + 2;
-  };
-
   return (
     <>
       <Header>
-        <LeftSection>
-          <MenuIcon onClick={() => {}}>☰</MenuIcon>
-        </LeftSection>
-        <CenterSection>
-          <Logo src={logo} alt="Uncover Learning" />
-        </CenterSection>
-        <RightSection>
-          <ContactText>contact</ContactText>
-        </RightSection>
+        <MenuIcon>☰</MenuIcon>
+        <Logo $visible={showLogo}>LOGO</Logo>
+        <ContactText>Contact</ContactText>
       </Header>
       <Container>
         <CardStack>
           {cards.map((card, index) => {
             const offset = index - currentIndex;
-            const isVisible = isCardVisible(index);
+            const isVisible = index === currentIndex || 
+                            index === (currentIndex + 1) % cards.length || 
+                            index === (currentIndex + 2) % cards.length;
             const zIndex = index === currentIndex ? 3 : 2 - Math.abs(offset);
 
             return (
@@ -219,7 +188,6 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
                 $offset={offset}
                 $zIndex={zIndex}
                 $isVisible={isVisible}
-                onClick={() => handleCardClick(index)}
               >
                 <Flashcard
                   id={card.id}
@@ -228,18 +196,28 @@ const FlashcardContainer: React.FC<FlashcardContainerProps> = ({
                   isLogoCard={card.isLogoCard}
                   onExpand={card.isLogoCard ? onExpandLogoCard : undefined}
                   onCollapse={card.isLogoCard ? onCollapseLogoCard : undefined}
-                  isFlippable={index === currentIndex}
-                  isFlipped={flippedCards[index]}
-                  onFlip={() => handleFlip(index)}
                 />
               </CardWrapper>
             );
           })}
         </CardStack>
-        <ArrowButton className="left" onClick={handlePrev}>◂</ArrowButton>
-        <ArrowButton className="right" onClick={handleNext}>▸</ArrowButton>
+        <ArrowButton className="left" onClick={handlePrev}>←</ArrowButton>
+        <ArrowButton className="right" onClick={handleNext}>→</ArrowButton>
       </Container>
     </>
+=======
+  return (
+    <Container>
+      {cards.map((card, index) => (
+        <Flashcard
+          key={index}
+          {...card}
+          onExpand={card.isLogoCard ? onExpandLogoCard : undefined}
+          onCollapse={card.isLogoCard ? onCollapseLogoCard : undefined}
+        />
+      ))}
+    </Container>
+>>>>>>> e27fef9ad10caecc36cfb3a161b5b8a3253e492f
   );
 };
 
