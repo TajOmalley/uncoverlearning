@@ -39,14 +39,6 @@ const Logo = styled.img`
   height: auto;
 `;
 
-const Brand = styled.h1`
-  font-family: 'Fraunces', serif;
-  font-size: 2rem;
-  color: #5c6a5a;
-  font-weight: 600;
-  margin: 0;
-`;
-
 const Main = styled.div`
   flex: 1;
   display: flex;
@@ -120,7 +112,6 @@ const ExpandedLogoCard: React.FC<ExpandedLogoCardProps> = ({ onCollapse, logo, b
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [fileTitle, setFileTitle] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Prevent background scroll when overlay is open
@@ -159,7 +150,6 @@ const ExpandedLogoCard: React.FC<ExpandedLogoCardProps> = ({ onCollapse, logo, b
     const url = URL.createObjectURL(file);
     setPdfUrl(url);
     setUploadStatus('Uploading document... This may take a moment.');
-    setIsUploading(true);
     
     try {
       console.log('Uploading document:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
@@ -169,10 +159,8 @@ const ExpandedLogoCard: React.FC<ExpandedLogoCardProps> = ({ onCollapse, logo, b
       
       setFileTitle(file.name);
       setUploadStatus('Document uploaded and processing started! You can now ask questions about it.');
-      setIsUploading(false);
     } catch (err: any) {
       console.error('Upload error:', err);
-      setIsUploading(false);
       
       let errorMessage = 'Failed to upload document: Unknown error.';
       
