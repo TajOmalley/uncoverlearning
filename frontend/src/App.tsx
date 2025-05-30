@@ -15,10 +15,6 @@ const App: React.FC = () => {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [fileTitle, setFileTitle] = useState<string | null>(null);
 
-  const handleExpandLogoCard = () => {
-    setIsChatExpanded(true);
-  };
-
   const handleCollapseLogoCard = () => {
     setIsChatExpanded(false);
   };

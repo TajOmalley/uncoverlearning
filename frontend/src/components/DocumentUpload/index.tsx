@@ -214,7 +214,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onUploadSuccess }) => {
     });
 
     try {
-      const response = await uploadDocument(selectedFile, selectedFile.name, handleProgressUpdate);
+      await uploadDocument(selectedFile, selectedFile.name, handleProgressUpdate);
       setMessage({ text: 'Document uploaded successfully!', type: 'success' });
       onUploadSuccess(selectedFile.name);
       setSelectedFile(null);
