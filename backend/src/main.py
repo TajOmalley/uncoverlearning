@@ -39,16 +39,12 @@ async def log_requests(request: Request, call_next):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://uncoverlearning-deploy.vercel.app",  # Main Vercel app
-        "https://uncoverlearning-deploy-ky6fmt5j1-magnus-projects-a977a13e.vercel.app",  # Specific deployment
-        "https://uncoverlearning-deploy-git-main-magnus-projects-a977a13e.vercel.app",  # Git branch preview
-        # Allow all Vercel preview deployments from this project
-        "https://uncoverlearning-deploy-*-magnus-projects-a977a13e.vercel.app",
+        "https://uncoverlearning.vercel.app",  # Main Vercel app
         # Local development
         "http://localhost:3000",
         "http://127.0.0.1:3000"
     ],
-    allow_origin_regex=r"https://uncoverlearning-deploy.*\.vercel\.app",  # Allow all Vercel preview deployments
+    allow_origin_regex=r"https://uncoverlearning.*\.vercel\.app",  # Allow all Vercel preview deployments
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods for simplicity
     allow_headers=["*"],  # Allow all headers for simplicity
